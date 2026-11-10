@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel de cotizaciones | futsala.co</title>
+<style>
+:root{--bg:#0a0a0c;--card:#16161b;--line:#2a2a32;--text:#f5f5f7;--muted:#a2a2ad;--y:#ffc21a;--p:#ff2d87;--b:#10a5dc;--g:#25d366}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:16px}
+h1{font-size:1.4rem;margin:0 0 4px} .muted{color:var(--muted);font-size:.85rem}
+input,select,textarea,button{font:inherit;color:var(--text);background:#101014;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px}
+button{cursor:pointer;background:linear-gradient(100deg,var(--y),var(--p));color:#111;border:0;font-weight:700}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:500}
+#login{max-width:340px;margin:20vh auto;display:grid;gap:10px;text-align:center}
+#panel{display:none;max-width:1200px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+.bar input{flex:1;min-width:180px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{display:block;font-size:1.4rem;color:var(--y)}
+.list{display:grid;gap:12px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:8px}
+.q__top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.q__title{font-weight:700;font-size:1.05rem}
+.q__val{font-weight:800;color:var(--y);font-size:1.15rem;text-align:right}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 16px;font-size:.88rem}
+.grid span{color:var(--muted)}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.75rem;font-weight:600;border:1px solid var(--line)}
+.tag.ok{border-color:var(--g);color:var(--g)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row textarea{flex:1;min-width:200px;min-height:40px;resize:vertical}
+a.wa{background:var(--g);color:#06260f;text-decoration:none;font-weight:700;padding:9px 14px;border-radius:10px}
+.del{color:var(--p);background:transparent;border:1px solid var(--line);font-weight:500}
+</style></head><body>
+
+<form id="login">
+  <h1>Panel futsala.co</h1>
+  <span class="muted">Ingresa la clave de administrador</span>
+  <input type="password" id="pass" placeholder="Clave" autocomplete="current-password" required>
+  <button>Entrar</button>
+  <span class="muted" id="loginErr" style="color:var(--p)"></span>
+</form>
+
+<div id="panel">
+  <h1>Cotizaciones</h1>
+  <div class="muted">Seguimiento de clientes del cotizador</div>
+  <div class="stats" id="stats"></div>
+  <div class="bar">
+    <input id="search" type="search" placeholder="Buscar por evento, organizador, teléfono o lugar…">
+    <select id="filter"><option value="">Todos los estados</option></select>
+    <button class="ghost" id="csv">Descargar CSV</button>
+    <button class="ghost" id="reload">Actualizar</button>
+    <button class="ghost" id="logout">Salir</button>
+  </div>
+  <div class="list" id="list"></div>
+</div>
+
+<script>
+const ESTADOS=["nuevo","contactado","negociando","cerrado","perdido"];
+const $=s=>document.querySelector(s);
+const fmt=n=>"$"+Math.round(n).toLocaleString("es-CO");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let pass=sessionStorage.getItem("adm")||"", data=[];
+const H=()=>({Authorization:"Basic "+btoa("admin:"+pass),"Content-Type":"application/json"});
+
+$("#filter").innerHTML+=ESTADOS.map(e=>`<option>${e}</option>`).join("");
+
+async function load(){
+  const r=await fetch("/api/admin/cotizaciones",{headers:H()});
+  if(r.status===401){sessionStorage.removeItem("adm");$("#panel").style.display="none";$("#login").style.display="grid";$("#loginErr").textContent=pass?"Clave incorrecta":"";pass="";return false}
+  data=await r.json();$("#login").style.display="none";$("#panel").style.display="block";render();return true;
+}
+$("#login").addEventListener("submit",async e=>{e.preventDefault();pass=$("#pass").value;if(await load())sessionStorage.setItem("adm",pass)});
+$("#logout").onclick=()=>{sessionStorage.removeItem("adm");location.reload()};
+$("#reload").onclick=load;
+$("#search").oninput=render;$("#filter").onchange=render;
+
+function render(){
+  const q=$("#search").value.toLowerCase(),f=$("#filter").value;
+  const rows=data.filter(d=>(!f||d.estado===f)&&(!q||[d.evento,d.organizador,d.telefono,d.lugar].join(" ").toLowerCase().includes(q)));
+  const cerrados=data.filter(d=>d.estado==="cerrado");
+  $("#stats").innerHTML=[
+    ["Total cotizaciones",data.length],
+    ["Siguieron redes",data.filter(d=>d.siguio_redes).length],
+    ["Pasaron a WhatsApp",data.filter(d=>d.contacto_whatsapp).length],
+    ["Cerradas",cerrados.length],
+    ["Valor cerrado",fmt(cerrados.reduce((a,d)=>a+d.valor_final,0))],
+  ].map(([k,v])=>`<div class="stat"><b>${v}</b>${k}</div>`).join("");
+  $("#list").innerHTML=rows.map(d=>{
+    const tel=d.telefono.replace(/\D/g,"");const wa=tel.length<=10?"57"+tel:tel;
+    return `<div class="q" data-id="${d.id}">
+      <div class="q__top"><div><div class="q__title">${esc(d.evento)}</div>
+        <span class="muted">${new Date(d.creado).toLocaleString("es-CO")}</span></div>
+        <div class="q__val">${fmt(d.valor_final)}<br><span class="muted" style="font-weight:400">${d.siguio_redes?"con descuento por redes":"sin descuento redes"}</span></div></div>
+      <div class="grid">
+        <div><span>Organizador:</span> ${esc(d.organizador)}</div>
+        <div><span>Teléfono:</span> ${esc(d.telefono)}</div>
+        <div><span>Fecha:</span> ${esc(d.fecha)}</div>
+        <div><span>Lugar:</span> ${esc(d.lugar)}</div>
+        <div><span>Partidos:</span> ${esc(d.partidos)}</div>
+        <div><span>Transmisión:</span> ${esc(d.camaras)}</div>
+        <div><span>Sin:</span> ${esc(d.sin_servicios||"—")}</div>
+        <div><span>Valor cotizado:</span> ${fmt(d.valor_cotizado)}</div>
+      </div>
+      <div class="row"><span class="tag ${d.siguio_redes?"ok":""}">${d.siguio_redes?"✓":"✗"} siguió redes</span>
+        <span class="tag ${d.contacto_whatsapp?"ok":""}">${d.contacto_whatsapp?"✓":"✗"} abrió WhatsApp</span></div>
+      <div class="row">
+        <select class="estado">${ESTADOS.map(e=>`<option ${e===d.estado?"selected":""}>${e}</option>`).join("")}</select>
+        <textarea class="notas" placeholder="Notas de seguimiento…">${esc(d.notas)}</textarea>
+        <button class="save">Guardar</button>
+        <a class="wa" target="_blank" rel="noopener" href="https://wa.me/${wa}">WhatsApp</a>
+        <button class="del">Eliminar</button>
+      </div></div>`}).join("")||'<p class="muted">No hay cotizaciones.</p>';
+}
+$("#list").addEventListener("click",async e=>{
+  const card=e.target.closest(".q");if(!card)return;const id=card.dataset.id;
+  if(e.target.classList.contains("save")){
+    const r=await fetch("/api/admin/cotizaciones/"+id,{method:"PATCH",headers:H(),body:JSON.stringify({estado:card.querySelector(".estado").value,notas:card.querySelector(".notas").value})});
+    e.target.textContent=r.ok?"✓ Guardado":"Error";setTimeout(()=>e.target.textContent="Guardar",1500);
+    if(r.ok){const d=data.find(x=>x.id===id);d.estado=card.querySelector(".estado").value;d.notas=card.querySelector(".notas").value;}
+  }
+  if(e.target.classList.contains("del")&&confirm("¿Eliminar esta cotización? No se puede deshacer.")){
+    await fetch("/api/admin/cotizaciones/"+id,{method:"DELETE",headers:H()});load();
+  }
+});
+$("#csv").onclick=()=>{
+  const cols=["creado","evento","organizador","telefono","fecha","lugar","partidos","camaras","sin_servicios","valor_base","valor_cotizado","siguio_redes","valor_final","contacto_whatsapp","estado","notas"];
+  const cell=v=>{v=String(v??"");if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
+  const csv="﻿"+[cols.join(","),...data.map(d=>cols.map(c=>cell(d[c])).join(","))].join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="cotizaciones-futsala.csv";a.click();
+};
+if(pass)load();
+</script></body></html>

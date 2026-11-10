@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cotiza tu evento | futsala.co</title>
+<meta name="description" content="Cotiza la transmisión y narración de tu evento deportivo en minutos.">
+<meta name="theme-color" content="#0a0a0c">
+<meta property="og:title" content="Cotiza tu evento deportivo | futsala.co">
+<meta property="og:description" content="Transmisión, narración y comentarista para tu torneo. Cotiza en menos de 1 minuto.">
+<meta property="og:image" content="assets/logo.png">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=7">
+</head>
+<body>
+
+<header class="topbar">
+  <img src="assets/futsala-header.png" alt="futsala.co" class="topbar__logo">
+  <div class="progress" id="progress" aria-hidden="true"><i id="progressBar"></i></div>
+</header>
+
+<main id="app">
+
+  <!-- 0. INICIO -->
+  <section class="screen active" data-step="0">
+    <div class="hero">
+      <video id="heroVideo" class="hero__video" autoplay muted loop playsinline preload="auto" poster="assets/poster.jpg">
+        <source src="assets/video.mp4" type="video/mp4">
+      </video>
+      <div class="hero__fallback" aria-hidden="true"></div>
+      <div class="hero__shade"></div>
+      <div class="hero__content">
+        <img src="assets/logo.png" alt="Logo futsala.co" class="hero__logo">
+        <h1>Tu torneo <em>en vivo</em>,<br>con narración y transmisión</h1>
+        <p>Cotiza tu evento deportivo en menos de un minuto.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary btn--xl" data-go="1">Quiero cotizar evento</button>
+    </div>
+  </section>
+
+  <!-- 1. DATOS DEL EVENTO -->
+  <section class="screen" data-step="1">
+    <h2>Cuéntanos de tu evento</h2>
+    <form id="formEvento" class="card" novalidate>
+      <label>Nombre del evento
+        <input type="text" id="evNombre" placeholder="Ej: Copa Barrio Unido" autocomplete="off" required>
+      </label>
+      <label>Nombre del organizador
+        <input type="text" id="evOrg" placeholder="Tu nombre" autocomplete="name" required>
+      </label>
+      <label>Teléfono / WhatsApp
+        <input type="tel" id="evTel" placeholder="Ej: 3123364028" inputmode="numeric" pattern="3[0-9]{9}" autocomplete="tel-national" maxlength="10" required>
+      </label>
+      <label>Fecha estimada
+        <input type="date" id="evFecha" required>
+      </label>
+      <label>Lugar donde se realizará
+        <input type="text" id="evLugar" placeholder="Ej: Cancha El Campín, Coliseo Municipal, Parque Simón Bolívar" maxlength="160" autocomplete="off" required>
+      </label>
+      <p class="error" id="err1" role="alert"></p>
+    </form>
+    <div class="actions actions--row">
+      <button class="btn btn--ghost" data-back>Atrás</button>
+      <button class="btn btn--primary" id="next1">Continuar</button>
+    </div>
+  </section>
+
+  <!-- 2. PARTIDOS -->
+  <section class="screen" data-step="2">
+    <h2>¿Qué partidos deseas cotizar?</h2>
+    <div class="options" id="optPartidos"></div>
+    <div class="actions actions--row">
+      <button class="btn btn--ghost" data-back>Atrás</button>
+      <button class="btn btn--primary" id="next2" disabled>Continuar</button>
+    </div>
+  </section>
+
+  <!-- 3. CAMARAS -->
+  <section class="screen" data-step="3">
+    <h2>¿Cómo quieres tu transmisión?</h2>
+    <div class="options" id="optCamaras"></div>
+    <div class="actions actions--row">
+      <button class="btn btn--ghost" data-back>Atrás</button>
+      <button class="btn btn--primary" id="next3" disabled>Continuar</button>
+    </div>
+  </section>
+
+  <!-- 4. SERVICIOS -->
+  <section class="screen" data-step="4">
+    <h2>Todos los partidos incluyen</h2>
+    <ul class="included">
+      <li><b>🎙️</b> Narración y comentarista</li>
+      <li><b>📺</b> Pauta en pantalla de tus patrocinadores</li>
+      <li><b>🔊</b> 2 cabinas de sonido que se amplía en todo el lugar</li>
+    </ul>
+    <div class="actions actions--row">
+      <button class="btn btn--ghost" data-back>Atrás</button>
+      <button class="btn btn--primary" id="next4">Ver cotización</button>
+    </div>
+  </section>
+
+  <!-- 5. RESULTADO -->
+  <section class="screen" data-step="5">
+    <h2>Tu cotización</h2>
+    <div class="card quote">
+      <div class="quote__event" id="qEvento"></div>
+      <dl class="quote__list" id="qList"></dl>
+      <div class="quote__total">
+        <span>Valor estimado</span>
+        <strong id="qTotal">$0</strong>
+      </div>
+      <h3 class="quote__h">Tu cotización incluye</h3>
+      <ul class="included included--quote" id="qIncluye"></ul>
+    </div>
+    <div class="actions actions--row">
+      <button class="btn btn--ghost" data-back>Atrás</button>
+      <button class="btn btn--primary" id="next5">🎁 Obtener descuento si nos sigue en YouTube</button>
+    </div>
+  </section>
+
+  <!-- 6. DESCUENTO POR SEGUIR REDES + WHATSAPP -->
+  <section class="screen" data-step="6">
+    <h2>Desbloquea tu descuento 🎁</h2>
+    <p class="lead">Suscríbete a nuestro canal de YouTube. Al hacerlo, tu descuento se aplica y se habilita el contacto por WhatsApp.</p>
+    <div class="socials" id="socials"></div>
+    <div class="card quote quote--mini" id="discountBox" hidden>
+      <div class="quote__total">
+        <span>Tu valor con descuento</span>
+        <strong id="qTotalDesc">$0</strong>
+      </div>
+      <p class="hint" id="qWas"></p>
+    </div>
+    <p class="hint" id="socialHint">Abre el canal y suscríbete. Se marcará cuando lo hayas visitado.</p>
+    <div class="actions">
+      <a class="btn btn--wa btn--xl is-locked" id="waBtn" href="#" target="_blank" rel="noopener" aria-disabled="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A11.9 11.9 0 0 0 12 0C5.4 0 .1 5.3.1 11.9c0 2.1.6 4.1 1.6 5.9L0 24l6.4-1.7a11.9 11.9 0 0 0 5.6 1.4c6.6 0 11.9-5.3 11.9-11.9 0-3.2-1.2-6.2-3.4-8.3ZM12 21.7c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.8 1 1-3.7-.2-.4a9.8 9.8 0 0 1-1.5-5.2c0-5.4 4.4-9.8 9.9-9.8 2.6 0 5.1 1 6.9 2.9a9.7 9.7 0 0 1 2.9 6.9c0 5.4-4.5 9.9-9.8 9.9Zm5.4-7.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1l-1 1.2c-.2.2-.4.2-.7.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3Z"/></svg>
+        Contactar por WhatsApp
+      </a>
+    </div>
+    <div class="actions"><button class="btn btn--ghost" id="restart">Hacer otra cotización</button></div>
+  </section>
+
+</main>
+
+<script src="pricing.js?v=7"></script>
+<script src="app.js?v=7"></script>
+</body>
+</html>
