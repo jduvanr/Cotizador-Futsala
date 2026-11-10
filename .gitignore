@@ -1,6 +1,7 @@
 node_modules/
 data/
 .env
-assets/lv_*.mp4
-assets/futsala.co.png
+.vercel/
 *.db
+public/assets/lv_*.mp4
+public/assets/futsala.co.png
