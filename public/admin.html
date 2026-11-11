@@ -77,7 +77,7 @@ $("#search").oninput=render;$("#filter").onchange=render;
 
 function render(){
   const q=$("#search").value.toLowerCase(),f=$("#filter").value;
-  const rows=data.filter(d=>(!f||d.estado===f)&&(!q||[d.evento,d.organizador,d.telefono,d.lugar].join(" ").toLowerCase().includes(q)));
+  const rows=data.filter(d=>(!f||d.estado===f)&&(!q||[d.evento,d.organizador,d.telefono,d.lugar,d.deporte].join(" ").toLowerCase().includes(q)));
   const cerrados=data.filter(d=>d.estado==="cerrado");
   $("#stats").innerHTML=[
     ["Total cotizaciones",data.length],
@@ -97,6 +97,7 @@ function render(){
         <div><span>Teléfono:</span> ${esc(d.telefono)}</div>
         <div><span>Fecha:</span> ${esc(d.fecha)}</div>
         <div><span>Lugar:</span> ${esc(d.lugar)}</div>
+        <div><span>Deporte:</span> ${esc(d.deporte||"—")}</div>
         <div><span>Partidos:</span> ${esc(d.partidos)}</div>
         <div><span>Transmisión:</span> ${esc(d.camaras)}</div>
         <div><span>Sin:</span> ${esc(d.sin_servicios||"—")}</div>
@@ -124,7 +125,7 @@ $("#list").addEventListener("click",async e=>{
   }
 });
 $("#csv").onclick=()=>{
-  const cols=["creado","evento","organizador","telefono","fecha","lugar","partidos","camaras","sin_servicios","valor_base","valor_cotizado","siguio_redes","valor_final","contacto_whatsapp","estado","notas"];
+  const cols=["creado","evento","organizador","telefono","fecha","lugar","deporte","partidos","camaras","sin_servicios","valor_base","valor_cotizado","siguio_redes","valor_final","contacto_whatsapp","estado","notas"];
   const cell=v=>{v=String(v??"");if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
   const csv="﻿"+[cols.join(","),...data.map(d=>cols.map(c=>cell(d[c])).join(","))].join("\n");
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="cotizaciones-futsala.csv";a.click();

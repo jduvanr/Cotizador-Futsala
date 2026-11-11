@@ -8,6 +8,7 @@ create table if not exists public.cotizaciones (
   telefono          text not null,
   fecha             date not null,
   lugar             text not null,
+  deporte           text not null default 'Fútbol de salón',
   partidos          text not null,
   camaras           text not null,
   sin_servicios     text not null default '',
@@ -23,6 +24,9 @@ create table if not exists public.cotizaciones (
 
 create index if not exists cotizaciones_creado_idx on public.cotizaciones (creado desc);
 create index if not exists cotizaciones_estado_idx on public.cotizaciones (estado);
+
+-- Si ya habías creado la tabla antes, ejecuta solo esta línea para agregar la columna nueva:
+alter table public.cotizaciones add column if not exists deporte text not null default 'Fútbol de salón';
 
 -- Seguridad: con RLS activo y SIN políticas, la clave pública (anon) no puede leer ni escribir.
 -- Solo el servidor, con la service_role key, accede a la tabla.

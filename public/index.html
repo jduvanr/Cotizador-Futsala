@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=7">
+<link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
 
@@ -43,8 +43,17 @@
     </div>
   </section>
 
-  <!-- 1. DATOS DEL EVENTO -->
+  <!-- 1. DEPORTE -->
   <section class="screen" data-step="1">
+    <h2>¿Qué deporte quieres cotizar?</h2>
+    <div class="options options--sports" id="optDeportes"></div>
+    <div class="actions actions--row">
+      <button class="btn btn--ghost" data-back>Atrás</button>
+    </div>
+  </section>
+
+  <!-- 1. DATOS DEL EVENTO -->
+  <section class="screen" data-step="2">
     <h2>Cuéntanos de tu evento</h2>
     <form id="formEvento" class="card" novalidate>
       <label>Nombre del evento
@@ -71,7 +80,7 @@
   </section>
 
   <!-- 2. PARTIDOS -->
-  <section class="screen" data-step="2">
+  <section class="screen" data-step="3">
     <h2>¿Qué partidos deseas cotizar?</h2>
     <div class="options" id="optPartidos"></div>
     <div class="actions actions--row">
@@ -81,7 +90,7 @@
   </section>
 
   <!-- 3. CAMARAS -->
-  <section class="screen" data-step="3">
+  <section class="screen" data-step="4">
     <h2>¿Cómo quieres tu transmisión?</h2>
     <div class="options" id="optCamaras"></div>
     <div class="actions actions--row">
@@ -91,7 +100,7 @@
   </section>
 
   <!-- 4. SERVICIOS -->
-  <section class="screen" data-step="4">
+  <section class="screen" data-step="5">
     <h2>Todos los partidos incluyen</h2>
     <ul class="included">
       <li><b>🎙️</b> Narración y comentarista</li>
@@ -105,7 +114,7 @@
   </section>
 
   <!-- 5. RESULTADO -->
-  <section class="screen" data-step="5">
+  <section class="screen" data-step="6">
     <h2>Tu cotización</h2>
     <div class="card quote">
       <div class="quote__event" id="qEvento"></div>
@@ -116,6 +125,8 @@
       </div>
       <h3 class="quote__h">Tu cotización incluye</h3>
       <ul class="included included--quote" id="qIncluye"></ul>
+      <p class="negotiation">“Los precios están sujetos a negociación”</p>
+      <p class="fine">Si el evento es fuera de la ciudad de Bogotá, el valor de los viáticos necesarios debe ser revisado.</p>
     </div>
     <div class="actions actions--row">
       <button class="btn btn--ghost" data-back>Atrás</button>
@@ -124,16 +135,18 @@
   </section>
 
   <!-- 6. DESCUENTO POR SEGUIR REDES + WHATSAPP -->
-  <section class="screen" data-step="6">
+  <section class="screen" data-step="7">
     <h2>Desbloquea tu descuento 🎁</h2>
     <p class="lead">Suscríbete a nuestro canal de YouTube. Al hacerlo, tu descuento se aplica y se habilita el contacto por WhatsApp.</p>
     <div class="socials" id="socials"></div>
     <div class="card quote quote--mini" id="discountBox" hidden>
       <div class="quote__total">
-        <span>Tu valor con descuento</span>
+        <span>Valor estimado con descuento</span>
         <strong id="qTotalDesc">$0</strong>
       </div>
       <p class="hint" id="qWas"></p>
+      <p class="negotiation">“Los precios están sujetos a negociación”</p>
+      <p class="fine">Si el evento es fuera de la ciudad de Bogotá, el valor de los viáticos necesarios debe ser revisado.</p>
     </div>
     <p class="hint" id="socialHint">Abre el canal y suscríbete. Se marcará cuando lo hayas visitado.</p>
     <div class="actions">
@@ -147,7 +160,7 @@
 
 </main>
 
-<script src="pricing.js?v=7"></script>
-<script src="app.js?v=7"></script>
+<script src="pricing.js?v=11"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>

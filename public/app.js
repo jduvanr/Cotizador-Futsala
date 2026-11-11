@@ -9,22 +9,22 @@ const CONFIG = {
   ],
 };
 
-const { PARTIDOS, CAMARAS, EXTRAS, calcular } = PRICING;
+const { DEPORTES, PARTIDOS, CAMARAS, EXTRAS, calcular } = PRICING;
 
 /* ============================================================ */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const fmt = n => "$" + Math.round(n).toLocaleString("es-CO");
 
-const state = { step: 0, partidos: null, camaras: null, extras: new Set(), visited: new Set(), siguio: false, id: null };
-const TOTAL_STEPS = 6;
+const state = { step: 0, deporte: null, partidos: null, camaras: null, extras: new Set(), visited: new Set(), siguio: false, id: null };
+const TOTAL_STEPS = 7;
 
 /* ---------- navegación ---------- */
 function go(n) {
   state.step = n;
   $$(".screen").forEach(s => s.classList.toggle("active", +s.dataset.step === n));
   $("#progressBar").style.width = (n / TOTAL_STEPS * 100) + "%";
-  if (n === 5) renderQuote();
+  if (n === 6) renderQuote();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $$("[data-go]").forEach(b => b.addEventListener("click", () => go(+b.dataset.go)));
@@ -69,7 +69,7 @@ $("#next1").addEventListener("click", () => {
   if (d.fecha < manana || d.fecha > CONFIG.fechaMax) return fail("Elige una fecha desde mañana y hasta el 31 de diciembre de 2028.", "#evFecha");
   if (!d.lugar) return fail("Escribe dónde se realizará.", "#evLugar");
   err.textContent = "";
-  go(2);
+  go(3);
 });
 
 /* ---------- opciones (paso 2, 3, 4) ---------- */
@@ -79,6 +79,7 @@ function optionHTML(o, desc) {
     <span class="opt__body"><span class="opt__title">${o.titulo}</span>${desc ? `<span class="opt__desc" style="display:block">${desc}</span>` : ""}</span>
     <span class="opt__check">✓</span></button>`;
 }
+$("#optDeportes").innerHTML = DEPORTES.map(d => optionHTML(d)).join("");
 $("#optPartidos").innerHTML = PARTIDOS.map(p => optionHTML(p, p.desc)).join("");
 $("#optCamaras").innerHTML = CAMARAS.map(c => optionHTML(c, c.desc)).join("");
 
@@ -91,15 +92,22 @@ function singleSelect(containerSel, key, btnSel) {
     $(btnSel).disabled = false;
   });
 }
+// Deporte: botones grandes, al tocar avanza solo
+$("#optDeportes").addEventListener("click", e => {
+  const b = e.target.closest(".opt"); if (!b) return;
+  $$(".opt", $("#optDeportes")).forEach(x => x.classList.toggle("selected", x === b));
+  state.deporte = b.dataset.id;
+  setTimeout(() => go(2), 180);
+});
 singleSelect("#optPartidos", "partidos", "#next2");
 singleSelect("#optCamaras", "camaras", "#next3");
-$("#next2").addEventListener("click", () => go(3));
-$("#next3").addEventListener("click", () => go(4));
+$("#next2").addEventListener("click", () => go(4));
+$("#next3").addEventListener("click", () => go(5));
 
-$("#next4").addEventListener("click", () => go(5));
+$("#next4").addEventListener("click", () => go(6));
 
 /* ---------- cálculo y resultado ---------- */
-const quote = () => calcular(state.partidos, state.camaras, [...state.extras], state.siguio);
+const quote = () => calcular(state.deporte, state.partidos, state.camaras, [...state.extras], state.siguio);
 
 function fechaLarga(iso) {
   if (!iso) return "";
@@ -113,7 +121,7 @@ async function guardarCotizacion() {
   try {
     const r = await fetch("/api/cotizaciones", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...datosEvento(), partidos: state.partidos, camaras: state.camaras, extras: [...state.extras] }),
+      body: JSON.stringify({ ...datosEvento(), deporte: state.deporte, partidos: state.partidos, camaras: state.camaras, extras: [...state.extras] }),
     });
     if (r.ok) state.id = (await r.json()).id;
   } catch (e) { /* si falla el guardado, el cliente puede seguir cotizando */ }
@@ -130,9 +138,9 @@ function renderQuote() {
     ["Organizador", ev.organizador],
     ["Fecha estimada", fechaLarga(ev.fecha)],
     ["Lugar", ev.lugar],
+    ["Deporte", c.d.titulo],
     ["Partidos", c.p.titulo],
     ["Transmisión", c.cam.titulo],
-    ["Valor base", fmt(c.base)],
   ];
   const esc = s => s.replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
   let html = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
@@ -150,7 +158,7 @@ function renderQuote() {
   $("#qIncluye").innerHTML = inc.map(([, ic, t]) => `<li><b>${ic}</b> ${t}</li>`).join("");
   guardarCotizacion();
 }
-$("#next5").addEventListener("click", () => go(6));
+$("#next5").addEventListener("click", () => go(7));
 
 /* ---------- redes + descuento + WhatsApp ---------- */
 const socialsBox = $("#socials");
@@ -178,17 +186,19 @@ function waMessage() {
     `*Teléfono:* ${ev.telefono}`,
     `*Fecha estimada:* ${fechaLarga(ev.fecha)}`,
     `*Lugar:* ${ev.lugar}`,
+    `*Deporte:* ${c.d.titulo}`,
     `*Partidos:* ${c.p.titulo} (${c.p.desc})`,
     `*Transmisión:* ${c.cam.titulo}`,
     `*Servicios omitidos:* ${omitidos}`,
-    `*Valor con descuento por seguirnos:* ${fmt(c.total)}`,
+    `*Valor estimado con descuento por seguirnos:* ${fmt(c.total)}`,
+    "_Precios sujetos a negociación. Si el evento es fuera de Bogotá, se revisan los viáticos._",
   ].join("\n");
 }
 function unlock() {
   state.siguio = true;
   const c = quote();
   $("#qTotalDesc").textContent = fmt(c.total);
-  $("#qWas").textContent = `Antes ${fmt(c.subtotal)} · ahorras ${fmt(c.descRedes)}`;
+  $("#qWas").textContent = `Valor estimado ${fmt(c.subtotal)} · descuento ${fmt(c.descRedes)}`;
   $("#discountBox").hidden = false;
   const b = $("#waBtn");
   b.classList.remove("is-locked");
@@ -200,7 +210,7 @@ function unlock() {
 $("#waBtn").addEventListener("click", () => actualizarCotizacion({ contacto_whatsapp: true }));
 
 $("#restart").addEventListener("click", () => {
-  Object.assign(state, { partidos: null, camaras: null, visited: new Set(), siguio: false, id: null });
+  Object.assign(state, { deporte: null, partidos: null, camaras: null, visited: new Set(), siguio: false, id: null });
   state.extras.clear();
   $$(".opt.selected").forEach(x => x.classList.remove("selected"));
   $("#next2").disabled = $("#next3").disabled = true;
